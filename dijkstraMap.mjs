@@ -1,8 +1,21 @@
 const DEFAULT_VALUE = Number.MAX_SAFE_INTEGER;
 
+const gridAdjacency = function(x, y) {
+    return [
+        { x: x - 1, y: y - 1 },
+        { x: x, y: y - 1 },
+        { x: x + 1, y: y - 1 },
+        { x: x - 1, y: y },
+        { x: x + 1, y: y },
+        { x: x - 1, y: y + 1 },
+        { x: x, y: y + 1 },
+        { x: x + 1, y: y + 1 }
+    ];
+}
+
 export default class DijkstraMap {
 
-    constructor(bounds, isPassable, isGoal) {
+    constructor(bounds, isPassable, isGoal, adjacencyFunction=gridAdjacency) {
         this.stale = true;
         this.inverseStale = true;
         this.fleeCoefficient = -1.2;
@@ -10,6 +23,7 @@ export default class DijkstraMap {
         this.minY = bounds.y.min;
         this.maxX = bounds.x.max;
         this.maxY = bounds.y.max;
+        this.adjacencyFunction = adjacencyFunction;
         this.isPassable = isPassable;
         this.isGoal = isGoal;
 
@@ -57,29 +71,11 @@ export default class DijkstraMap {
     }
 
     _valueOfLowestNeighbor(x, y) {
-        return Math.min(
-            this._valueAt(x-1, y-1),
-            this._valueAt(x, y-1),
-            this._valueAt(x+1, y-1),
-            this._valueAt(x-1, y),
-            this._valueAt(x+1, y),
-            this._valueAt(x-1, y+1),
-            this._valueAt(x, y+1),
-            this._valueAt(x+1, y+1)
-        );
+        return Math.min(...this.adjacencyFunction(x, y).map(p => this._valueAt(p.x, p.y)));
     }
 
     _valueOfLowestNeighborInverted(x, y) {
-        return Math.min(
-            this._valueAtInverted(x-1, y-1),
-            this._valueAtInverted(x, y-1),
-            this._valueAtInverted(x+1, y-1),
-            this._valueAtInverted(x-1, y),
-            this._valueAtInverted(x+1, y),
-            this._valueAtInverted(x-1, y+1),
-            this._valueAtInverted(x, y+1),
-            this._valueAtInverted(x+1, y+1)
-        );
+        return Math.min(...this.adjacencyFunction(x, y).map(p => this._valueAtInverted(p.x, p.y)));
     }
 
     _generateMap() {
